@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =  -w -g -Iinclude
+CFLAGS = -Wall -Wextra -g -Iinclude
 LDFLAGS = -lssl -lcrypto -lcurl -pthread
 
 # Directories
@@ -23,6 +23,7 @@ CORE_SOURCES = bencode.c \
 			   upload_manager.c \
                manage_peers.c \
                init_torrent_state.c \
+			   multithreaded_download_coordinator.c \
                download_coordinator.c
 
 CORE_OBJECTS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(CORE_SOURCES))

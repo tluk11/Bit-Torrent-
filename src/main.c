@@ -12,6 +12,8 @@
 #include "manage_peers.h"
 #include "global_state.h"
 #include "upload_manager.h"
+#include "multithreaded_download_coordinator.h"
+
 
 TorrentState *g_torrent_state = NULL;
 
@@ -41,7 +43,8 @@ void print_torrent_info(TorrentInfo *ti) {
     printf("\n\n");
 }
 
-void run_torrent_session(const char *torrent_file, int port) {
+void run_torrent_session(const char *torrent_file, int port,bool use_multithread) {
+    
     printf("\n=== BitTorrent Client ===\n");
     printf("Loading: %s\n", torrent_file);
     printf("Port: %d\n", port);
@@ -94,7 +97,13 @@ void run_torrent_session(const char *torrent_file, int port) {
     printf("******************************************\n");
     printf("\n");
     
-    int result = download_torrent(&ts);
+    int result;
+
+    if (use_multithread) {
+        result = download_torrent_multithreaded(&ts);
+    } else {
+        result = download_torrent(&ts);
+    }
 
     if (result == 0) {
         printf("\n");
@@ -216,7 +225,12 @@ int main(int argc, char **argv) {
     }
 
     int local_port = atoi(argv[1]);
-
+    bool use_multithread = true;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--multithread") == 0) {
+            use_multithread = true;
+        }
+    }
     // Check for --peer mode
     if (argc >= 5 && strcmp(argv[2], "--peer") == 0) {
         const char *peer_ip = argv[3];
@@ -266,7 +280,7 @@ int main(int argc, char **argv) {
         if (strlen(input) == 0)
             continue;
 
-        run_torrent_session(input, local_port);
+        run_torrent_session(input, local_port,use_multithread);
     }
 
     printf("\n Shutting down client.\n");
